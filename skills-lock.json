@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "645b891da1edbae76ab79c7b088d4e73397464f8396edaf773c0e01971ce75d6"
+    },
+    "neldivad-blueprint-instantiator": {
+      "source": "neldivad/neldivad-skills",
+      "sourceType": "github",
+      "computedHash": "a718410ce074f2be087e2de858df3b34447256d77b9a115b31701f58115ec333"
+    }
+  }
+}

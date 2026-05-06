@@ -1,0 +1,2 @@
+# Optional: secrets, .env templates, or other non-registry settings.
+# Poll URL lists live under src/lib/sources/<region>/<adapter>/seed_urls.txt
