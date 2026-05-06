@@ -26,6 +26,32 @@ Operator-facing doc: **how to run and extend the system**. **Who may edit what:*
 | Inspect DB audit rows | `python scripts/inspect_crawl.py` (or `--json`) |
 | View parsed JSON | `python scripts/view_parsed.py data/derived/parliament_my/parsed/<hash>/ --format md` |
 
+## Pipeline commands (venv active, PYTHONPATH=src)
+
+These run **after** the bill index has been crawled and CSVs are in `src/out/bills_csv/`.
+
+| Goal | Command |
+|------|---------|
+| Download PDFs — dry run | `PYTHONPATH=src python -m lib.pipeline.download --source parliament_my --dry-run` |
+| Download PDFs — capped at N | `PYTHONPATH=src python -m lib.pipeline.download --source parliament_my --max 20` |
+| Extract text from downloaded PDFs | `PYTHONPATH=src python -m lib.pipeline.extract --source parliament_my` |
+| Analyze bills with LLM | `PYTHONPATH=src python -m lib.pipeline.analyze --source parliament_my --max 10` |
+| Full pipeline (download → extract → analyze) | `PYTHONPATH=src python -m lib.pipeline.run --source parliament_my --max 20` |
+
+Pipeline outputs (all gitignored under `data/`):
+
+| Stage | Path |
+|-------|------|
+| Raw PDF | `data/raw/<adapter>/pdf/<year>/<bill_id>.pdf` |
+| PDF metadata | `data/raw/<adapter>/pdf/<year>/<bill_id>.meta.json` |
+| Extracted text | `data/derived/<adapter>/extracted/<year>/<bill_id>/text.txt` |
+| Segments | `data/derived/<adapter>/segments/<year>/<bill_id>/segments.json` |
+| Analysis | `data/derived/<adapter>/analyzed/<year>/<bill_id>/analysis.json` |
+
+**Force re-run** of a stage: append `--force` to overwrite existing artifacts.
+
+---
+
 ## Crawl trace & audit (why `crawl_history` was empty)
 
 **Parliament adapter CLI** (`lib.sources.my.parliament_my.crawl`) is **PDF-path only**: **`--list-arkib-bills`**, **`--list-pdfs`**, or **`--parse-html`**. It no longer runs a default “index fetch” or writes **`crawl_history`**; use **`scripts/init_db.py`** + other tooling if you need DB-backed polling.

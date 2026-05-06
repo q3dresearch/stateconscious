@@ -8,3 +8,4 @@ data/snapshots/
 !data/.gitkeep
 stateconscious.db
 .pytest_cache/
+site/

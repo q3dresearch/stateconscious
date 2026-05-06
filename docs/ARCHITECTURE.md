@@ -40,9 +40,43 @@ from lib.sources.my.parliament_my import fetch
 from lib.sources.my.parliament_my import parse  # HTML + billindex / dhtmlx PDF helpers
 ```
 
+## Pipeline
+
+After bill discovery (`src/lib/sources/…`), documents flow through four sequential stages under **`src/lib/pipeline/`**.
+
+| Module | Input | Output | Artifact path |
+|--------|-------|--------|---------------|
+| `download.py` | Bill row with `pdf_url` (from CSV or DB) | Raw PDF + metadata | `data/raw/<adapter>/pdf/<year>/<bill_id>.pdf` + `.meta.json` |
+| `extract.py` | Raw PDF path | Structured Markdown | `data/derived/<adapter>/extracted/<year>/<bill_id>/text.md` |
+| `segment.py` | Extracted text | Clauses / section list | `data/derived/<adapter>/segments/<year>/<bill_id>/segments.json` |
+| `analyze.py` | Segments + bill metadata | Semantic units + impact narrative | `data/derived/<adapter>/analyzed/<year>/<bill_id>/analysis.json` |
+
+**Idempotency:** each stage checks whether its artifact already exists before running; `--force` overwrites.
+
+**LLM:** configured via `.env` (see `.env.example`); client lives at `src/lib/llm/client.py`.
+
+### analysis.json schema (target)
+
+```json
+{
+  "bill_id": "D.R.21/2024",
+  "title": "Personal Data Protection (Amendment) Bill 2024",
+  "purpose": "one-sentence intent",
+  "summary": "2–3 sentence plain-English summary",
+  "key_clauses": [{"section": "4", "change": "…", "impact": "…"}],
+  "affected_parties": ["individuals", "data processors", "SMEs"],
+  "industries": ["tech", "finance", "healthcare"],
+  "tags": ["data-privacy", "compliance", "amendment"],
+  "confidence": 0.9,
+  "sha256": "<sha256 stored in .meta.json, not in path>",
+  "analyzed_at": "ISO-8601"
+}
+```
+
 ## Patterns
 
 - **Site crawl logic** lives under **`lib/sources/…`**, not **`lib/pipeline/`**.
+- **Pipeline logic** lives under **`lib/pipeline/`**; one module per stage.
 - **Thin scripts / fat library** — `scripts/*.py` stay small; logic lives under `lib/`.
 - **SQL migrations** — schema in `sql/migrations/`; `init_schema()` applies a file.
 - **Docs vs blueprint** — `docs/` = how the system runs; `blueprint/` = what we agreed to build.
